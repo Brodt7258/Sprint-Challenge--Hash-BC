@@ -9,6 +9,8 @@ from timeit import default_timer as timer
 
 import random
 
+from time import sleep
+
 
 def proof_of_work(last_proof):
     """
@@ -26,11 +28,14 @@ def proof_of_work(last_proof):
     proof = 0
     #  TODO: Your code here
 
+    while valid_proof(last_proof, proof) is False:
+        proof += 1
+
     print("Proof found: " + str(proof) + " in " + str(timer() - start))
     return proof
 
 
-def valid_proof(last_hash, proof):
+def valid_proof(last_proof, proof):
     """
     Validates the Proof:  Multi-ouroborus:  Do the last six characters of
     the hash of the last proof match the first six characters of the hash
@@ -40,7 +45,13 @@ def valid_proof(last_hash, proof):
     """
 
     # TODO: Your code here!
-    pass
+    guess = f'{proof}'.encode()
+
+    guess_hash = hashlib.sha256(guess).hexdigest()
+    last_hash = hashlib.sha256(f'{last_proof}'.encode()).hexdigest()
+    # print(guess_hash[:6], str(last_hash)[-6:])
+
+    return guess_hash[:6] == str(last_hash)[-6:]
 
 
 if __name__ == '__main__':
@@ -66,6 +77,7 @@ if __name__ == '__main__':
         # Get the last proof from the server
         r = requests.get(url=node + "/last_proof")
         data = r.json()
+        print(data)
         new_proof = proof_of_work(data.get('proof'))
 
         post_data = {"proof": new_proof,
